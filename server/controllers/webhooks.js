@@ -25,7 +25,7 @@ export const clerkWebhooks = async (req, res) => {
           image: data.image_url,
           resume: "",
         };
-        await userData.save();
+        await userModel.create(userData);
         res.json({});
         break;
       case "user.updated":
