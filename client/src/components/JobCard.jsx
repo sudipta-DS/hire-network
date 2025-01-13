@@ -1,11 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
 
 const JobCard = ({ job }) => {
   const navigate = useNavigate();
-  useEffect(() => {
-    console.log(job);
-  });
 
   return (
     <div className="border p-6 shadow rounded">
