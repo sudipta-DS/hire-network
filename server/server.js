@@ -10,6 +10,7 @@ import connectCloudinay from "./config/cloudinary.js";
 import jobRouter from "./routes/jobRoutes.js";
 import userRouter from "./routes/userRoutes.js";
 import { clerkMiddleware } from "@clerk/express";
+import corsOptionsDelegate from "./config/cors.js";
 
 const app = express();
 
@@ -17,7 +18,7 @@ await connectDB();
 await connectCloudinay();
 
 // Middlewares
-app.use(cors());
+app.use(cors(corsOptionsDelegate));
 app.use(express.json());
 app.use(clerkMiddleware());
 
