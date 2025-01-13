@@ -5,7 +5,7 @@ import multer from "multer";
 // const upload = multer({ storage: storage });
 
 const storage = multer.diskStorage({
-  destination: "/images",
+  destination: "images",
   filename: function (req, file, cb) {
     cb(null, file.originalname);
   },
