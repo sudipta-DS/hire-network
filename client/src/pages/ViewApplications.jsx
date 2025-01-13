@@ -1,7 +1,59 @@
-import { assets, viewApplicationsPageData } from "../assets/assets";
+import { useContext, useEffect, useState } from "react";
+import { assets } from "../assets/assets";
+import { AppContext } from "../context/AppContext";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const ViewApplications = () => {
-  return (
+  const { backend_url, recruiterToken } = useContext(AppContext);
+  const [applicants, setApplicants] = useState([]);
+
+  const fetchCompanyJobApplications = async () => {
+    try {
+      console.log(recruiterToken);
+      const { data } = await axios.get(
+        `${backend_url}/api/company/applicants`,
+        { headers: { token: recruiterToken } }
+      );
+      if (data.success) {
+        console.log(data.applications);
+        setApplicants(data.applications.reverse());
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const changeJobApplicationStatus = async (id, status) => {
+    try {
+      const { data } = await axios.post(
+        `${backend_url}/api/company/change-status`,
+        { id, status },
+        { headers: { token: recruiterToken } }
+      );
+      if (data.success) {
+        fetchCompanyJobApplications();
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  useEffect(() => {
+    if (recruiterToken) {
+      fetchCompanyJobApplications();
+    }
+  }, [recruiterToken]);
+
+  return applicants && applicants.length === 0 ? (
+    <div className="flex items-center justify-center h-[70vh]">
+      <p className="text-xl lg:text-2xl">No Applications Available </p>
+    </div>
+  ) : (
     <div className="container mx-auto p-4">
       <div>
         <table className="w-full max-w-4xl bg-white border border-gray-200 max-sm:text-sm">
@@ -16,7 +68,7 @@ const ViewApplications = () => {
             </tr>
           </thead>
           <tbody>
-            {viewApplicationsPageData.map((applicant, index) => {
+            {applicants.map((applicant, index) => {
               return (
                 <tr key={index} className="text-gray-700">
                   <td className="py-2 px-4 border-b text-center">
@@ -25,40 +77,60 @@ const ViewApplications = () => {
                   <td className="py-2 px-4 border-b text-center flex">
                     <img
                       className="w-10 h-10 rounded-full mr-3 max-sm:hidden"
-                      src={applicant.imgSrc}
+                      src={applicant.userId.image}
                       alt=""
                     />
-                    <span>{applicant.name}</span>
+                    <span>{applicant.userId.name}</span>
                   </td>
                   <td className="py-2 px-4 border-b text-center max-sm:hidden">
-                    {applicant.jobTitle}
+                    {applicant.jobId.title}
                   </td>
                   <td className="py-2 px-4 border-b text-center max-sm:hidden">
-                    {applicant.location}
+                    {applicant.jobId.location}
                   </td>
                   <td className="py-2 px-4 border-b text-center">
                     <a
                       className="bg-blue-50 text-blue-400 px-3 py-1 rounded inline-flex gap-2 items-center"
-                      href=""
+                      href={applicant.userId.resume}
                       target="_blank"
                     >
                       Resume <img src={assets.resume_download_icon} alt="" />
                     </a>
                   </td>
                   <td className="py-2 px-4 border-b relative">
-                    <div className="relative inline-block text-left group">
-                      <button className="text-gray-500 action-button">
-                        ...
-                      </button>
-                      <div className="z-10 hidden absolute right-0 md:left-0 top-0 mt-2 w-32 bg-white border border-gray-200 rounded shadow group-hover:block">
-                        <button className="block w-full text-left px-4 py-2 text-blue-500 hover:bg-gray-100">
-                          Accept
+                    {applicant.status === "Pending" ? (
+                      <div className="relative inline-block text-left group">
+                        <button className="text-gray-500 action-button">
+                          ...
                         </button>
-                        <button className="block w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100">
-                          Reject
-                        </button>
+                        <div className="z-10 hidden absolute right-0 md:left-0 top-0 mt-2 w-32 bg-white border border-gray-200 rounded shadow group-hover:block">
+                          <button
+                            onClick={() =>
+                              changeJobApplicationStatus(
+                                applicant._id,
+                                "Accepted"
+                              )
+                            }
+                            className="block w-full text-left px-4 py-2 text-blue-500 hover:bg-gray-100"
+                          >
+                            Accept
+                          </button>
+                          <button
+                            onClick={() =>
+                              changeJobApplicationStatus(
+                                applicant._id,
+                                "Rejected"
+                              )
+                            }
+                            className="block w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100"
+                          >
+                            Reject
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      <div>{applicant.status}</div>
+                    )}
                   </td>
                 </tr>
               );

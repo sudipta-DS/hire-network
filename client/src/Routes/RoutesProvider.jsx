@@ -6,8 +6,11 @@ import Dashboard from "../pages/Dashboard";
 import Addjob from "../pages/Addjob";
 import Managejobs from "../pages/Managejobs";
 import ViewApplications from "../pages/ViewApplications";
+import { useContext } from "react";
+import { AppContext } from "../context/AppContext";
 
 const RoutesProvider = ({ children }) => {
+  const { recruiterToken } = useContext(AppContext);
   return (
     <BrowserRouter>
       <Routes>
@@ -15,9 +18,13 @@ const RoutesProvider = ({ children }) => {
         <Route path="/applications" element={<Applications />} />
         <Route path="/apply-jobs/:id" element={<ApplyJob />} />
         <Route path="/dashboard" element={<Dashboard />}>
-          <Route path="add-job" element={<Addjob />} />
-          <Route path="manage-jobs" element={<Managejobs />} />
-          <Route path="view-applications" element={<ViewApplications />} />
+          {recruiterToken && (
+            <>
+              <Route path="add-job" element={<Addjob />} />
+              <Route path="manage-jobs" element={<Managejobs />} />
+              <Route path="view-applications" element={<ViewApplications />} />
+            </>
+          )}
         </Route>
       </Routes>
       {children}

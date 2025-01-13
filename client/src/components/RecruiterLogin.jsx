@@ -1,20 +1,57 @@
 import { useContext, useEffect, useState } from "react";
 import { assets } from "../assets/assets";
 import { AppContext } from "../context/AppContext";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import axios from "axios";
 
 const RecruiterLogin = () => {
   const [state, setState] = useState("login");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
-  const { setShowRecruiterLogin } = useContext(AppContext);
+  const { setShowRecruiterLogin, backend_url, setRecruiterToken } =
+    useContext(AppContext);
   const [image, setImage] = useState(false);
   const [isTextDataSubmitted, setIsTestDataSubmitted] = useState(false);
+  const navigate = useNavigate();
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
     if (state === "sign up" && !isTextDataSubmitted) {
       setIsTestDataSubmitted(true);
+    } else if (state === "login") {
+      const { data } = await axios.post(`${backend_url}/api/company/login`, {
+        email,
+        password,
+      });
+      if (data.success) {
+        localStorage.setItem("companyItem", data.token);
+        setRecruiterToken(data.token);
+        setShowRecruiterLogin(false);
+        navigate("/dashboard");
+      } else {
+        toast.error(data.message);
+      }
+    } else {
+      const formData = new FormData();
+      formData.append("email", email);
+      formData.append("name", name);
+      formData.append("password", password);
+      formData.append("image", image);
+
+      const { data } = await axios.post(
+        `${backend_url}/api/company/register`,
+        formData
+      );
+      if (data.success) {
+        localStorage.setItem("companyItem", data.token);
+        setRecruiterToken(data.token);
+        setShowRecruiterLogin(false);
+        navigate("/dashboard");
+      } else {
+        toast.error(data.message);
+      }
     }
   };
   useEffect(() => {
