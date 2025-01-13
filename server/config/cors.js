@@ -13,4 +13,4 @@ let corsOptionsDelegate = function (req, callback) {
   callback(null, corsOptions); // callback expects two parameters: error and options
 };
 
-module.exports = corsOptionsDelegate;
+export default corsOptionsDelegate;
